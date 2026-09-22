@@ -1,0 +1,170 @@
+# Test suite Makefile
+
+AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/src/jansson-2.14/src \
+              -I$(top_srcdir)/tests
+
+# Link against libckpool and jansson
+# JANSSON_LIBS is relative to src/, so we need to prepend src/ path
+LDADD = $(top_builddir)/src/libckpool.a $(top_builddir)/src/@JANSSON_LIBS@ @LIBS@ -lm -lcmocka
+
+# Unit tests
+check_PROGRAMS = \
+	unit/test-difficulty \
+	unit/test-sha256 \
+	unit/test-encoding \
+	unit/test-donation \
+	unit/test-useragent \
+	unit/test-address \
+	unit/test-string-utils \
+	unit/test-time-utils \
+	unit/test-fulltest \
+	unit/test-serialization \
+	unit/test-endian \
+	unit/test-dropidle \
+	unit/test-vardiff \
+	unit/test-share-params \
+	unit/test-config \
+	unit/test-password-diff \
+	unit/test-password-diff-job-id \
+	unit/test-fractional-stats \
+	unit/test-fractional-config \
+	unit/test-share-orphan-prevention \
+	unit/test-adjustment-hysteresis \
+	unit/test-network-diff-interactions \
+	unit/test-backwards-compatibility \
+	unit/test-ua-aggregation \
+	unit/test-worker-ua-recalc \
+	unit/test-persistent-ua-tracking \
+	unit/test-zombie-cleanup \
+	unit/test-auth-rejection \
+	unit/test-logmsg
+
+TESTS = $(check_PROGRAMS)
+
+.PHONY: check-perf
+
+check-perf:
+	CKPOOL_PERF_TESTS=1 $(MAKE) check
+	@echo ""
+	@echo "==== PERF RESULTS (from logs) ===="
+	@for f in unit/*.log; do \
+		awk '/BEGIN PERF TESTS/{p=1} p{print} /END PERF TESTS/{p=0}' "$$f"; \
+	done
+# Auth rejection tests
+unit_test_auth_rejection_SOURCES = \
+	unit/test-auth-rejection.c
+
+# UA normalization/aggregation tests
+unit_test_ua_aggregation_SOURCES = \
+	unit/test-ua-aggregation.c
+
+# Worker UA recalculation tests
+unit_test_worker_ua_recalc_SOURCES = \
+	unit/test-worker-ua-recalc.c
+
+# Difficulty calculation tests
+unit_test_difficulty_SOURCES = \
+	unit/test-difficulty.c
+
+# SHA-256 tests
+unit_test_sha256_SOURCES = \
+	unit/test-sha256.c
+
+# Encoding tests
+unit_test_encoding_SOURCES = \
+	unit/test-encoding.c
+
+# Donation system tests
+unit_test_donation_SOURCES = \
+	unit/test-donation.c
+
+# Useragent whitelisting tests
+unit_test_useragent_SOURCES = \
+	unit/test-useragent.c
+
+# Address encoding tests
+unit_test_address_SOURCES = \
+	unit/test-address.c
+
+# String utility tests
+unit_test_string_utils_SOURCES = \
+	unit/test-string-utils.c
+
+# Time utility tests
+unit_test_time_utils_SOURCES = \
+	unit/test-time-utils.c
+
+# Fulltest (hash validation) tests
+unit_test_fulltest_SOURCES = \
+	unit/test-fulltest.c
+
+# Number serialization tests
+unit_test_serialization_SOURCES = \
+	unit/test-serialization.c
+
+# Endian conversion tests
+unit_test_endian_SOURCES = \
+	unit/test-endian.c
+
+# dropidle feature tests
+unit_test_dropidle_SOURCES = \
+	unit/test-dropidle.c
+
+# Vardiff logic tests
+unit_test_vardiff_SOURCES = \
+	unit/test-vardiff.c
+
+# Share parameter validation tests
+unit_test_share_params_SOURCES = \
+	unit/test-share-params.c
+
+# Configuration parsing tests
+unit_test_config_SOURCES = \
+	unit/test-config.c
+
+# Password difficulty suggestion tests
+unit_test_password_diff_SOURCES = \
+	unit/test-password-diff.c
+
+# Password difficulty job ID assignment tests
+unit_test_password_diff_job_id_SOURCES = \
+	unit/test-password-diff-job-id.c
+
+# Fractional statistics accumulation tests
+unit_test_fractional_stats_SOURCES = \
+	unit/test-fractional-stats.c
+
+# Fractional configuration validation tests
+unit_test_fractional_config_SOURCES = \
+	unit/test-fractional-config.c
+
+# Share orphan prevention tests
+unit_test_share_orphan_prevention_SOURCES = \
+	unit/test-share-orphan-prevention.c
+
+# Adjustment hysteresis tests
+unit_test_adjustment_hysteresis_SOURCES = \
+	unit/test-adjustment-hysteresis.c
+
+# Network difficulty interaction tests
+unit_test_network_diff_interactions_SOURCES = \
+	unit/test-network-diff-interactions.c
+
+# Backwards compatibility tests
+unit_test_backwards_compatibility_SOURCES = \
+	unit/test-backwards-compatibility.c
+
+# Persistent UA tracking tests
+unit_test_persistent_ua_tracking_SOURCES = \
+	unit/test-persistent-ua-tracking.c
+
+# Zombie cleanup logic tests
+unit_test_zombie_cleanup_SOURCES = \
+	unit/test-zombie-cleanup.c
+
+# LOGMSGSIZ chunking / log truncation fix tests
+unit_test_logmsg_SOURCES = \
+	unit/test-logmsg.c
+
+# All tests depend on libckpool
+$(check_PROGRAMS): $(top_builddir)/src/libckpool.a

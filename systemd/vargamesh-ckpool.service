@@ -1,0 +1,51 @@
+[Unit]
+Description=VargaMesh CKPool SHA256 Stratum
+After=vargamesh-mainnet.service vargamesh-auxpow-bridge.service
+Requires=vargamesh-mainnet.service vargamesh-auxpow-bridge.service
+
+[Service]
+Type=simple
+
+User=vargamesh
+Group=vargamesh
+
+WorkingDirectory=/var/lib/vargamesh-ckpool
+
+RuntimeDirectory=vargamesh-ckpool
+RuntimeDirectoryMode=0750
+
+StateDirectory=vargamesh-ckpool
+StateDirectoryMode=0750
+
+LogsDirectory=vargamesh-ckpool
+LogsDirectoryMode=0750
+
+ExecStart=/opt/vargamesh/mining/bin/ckpool -B -c /etc/vargamesh/ckpool-vmesh.conf
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+UMask=0077
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+ReadOnlyPaths=/etc/vargamesh /opt/vargamesh
+ReadWritePaths=/var/lib/vargamesh-ckpool /var/log/vargamesh-ckpool /run/vargamesh-ckpool
+
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+{
+  "btcd": [
+    {
+      "url": "127.0.0.1:3932",
+      "auth": "CHANGE_ME",
+      "pass": "CHANGE_ME",
+      "notify": true
+    }
+  ],
+  "btcaddress": "YOUR_VMESH_MINING_ADDRESS",
+  "btcsig": "/VMESH/",
+  "serverurl": [
+    "0.0.0.0:3933"
+  ],
+  "mindiff": 1024,
+  "startdiff": 1024,
+  "highdiff": 1024,
+  "maxdiff": 0,
+  "allow_low_diff": false,
+  "blockpoll": 100,
+  "update_interval": 10,
+  "nonce1length": 4,
+  "nonce2length": 8,
+  "version_mask": "1fffe000",
+  "logdir": "/var/log/vargamesh-ckpool",
+  "donaddress": "YOUR_VMESH_DONATION_ADDRESS",
+  "donation": 0.0
+}

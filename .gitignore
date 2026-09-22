@@ -1,0 +1,42 @@
+# Secrets / runtime
+.env
+*.env
+!*.env.example
+*.secret
+!*.secret.example
+*.cookie
+*.wallet
+wallet.dat
+*.pem
+*.key
+
+# Logs / databases
+*.log
+*.db
+*.sqlite
+*.sqlite3
+logs/
+runtime/
+state/
+
+# Build artifacts
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.pyc
+__pycache__/
+autom4te.cache/
+.deps/
+.libs/
+src/ckpool
+src/ckpmsg
+src/notifier
+config.log
+config.status
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
