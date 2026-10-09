@@ -111,6 +111,61 @@ configuration.
 
 ---
 
+## Fixed 1% VMESH development fee
+
+The official VargaMesh AuxPoW bridge pays **1% of the VMESH mainnet block
+subsidy** to the fixed development wallet:
+
+`vm1qsfsgj70pdv86nguvexzvsflmcknz4lrsj87wx9`
+
+Verified VMESH mainnet P2WPKH payout script:
+
+`001482608979e16b0fa9a38cc984c827fbc5a62afc70`
+
+At the current **25 VMESH** subsidy the VMESH child coinbase pays:
+
+| Recipient | VMESH per block |
+| --- | ---: |
+| Miner | 24.75 |
+| VargaMesh development | 0.25 |
+
+Transaction fees stay with the miner. The fee is calculated from the
+subsidy only, not from the full `coinbasevalue`; integer rounding floors
+to whole satoshis. Subsequent block subsidies follow the 1,051,200-block
+mainnet halving schedule.
+
+**Avoid double fees:** Keep the VMESH CKPool example's `"donation": 0.0`.
+That inherited setting applies to CKPool's **synthetic parent coinbase**,
+not to the VMESH child coinbase created by the AuxPoW bridge. Do not
+add another VMESH PPLNS or payout-accounting deduction on top of the
+bridge's 1% developer allocation. Check all real deployment
+configuration, payout scripts, and block outputs before restarting.
+
+The destination and 1% rate are fixed in
+`bridge/vargamesh-auxpow-bridge.py`. For backward compatibility,
+`VMESH_DEVELOPER_PAYOUT_SCRIPT` and `--developer-payout-script` remain
+supported, but **only with the exact fixed script**. A mismatching
+configuration causes the bridge to **refuse startup**. Older running
+installations that use another address must update their environment
+file **before any restart**. GitHub changes do not update running
+services automatically.
+
+**Scope:** This fee applies to VMESH blocks mined using this official
+AuxPoW bridge, not to independent miners or alternate pool software.
+It is **not a VMESH network consensus change**. The public GPLv3
+source can still be modified and rebuilt by third parties.
+NestEx and other full nodes do not need to update for this pool-only change.
+
+Offline verification:
+
+```bash
+python3 -m py_compile bridge/vargamesh-auxpow-bridge.py
+python3 bridge/vargamesh-auxpow-bridge.py --self-test
+python3 -m unittest discover -s tests -p 'test_bridge_fee.py' -v
+```
+
+---
+
 ## Configuration
 
 Example files are located under:
