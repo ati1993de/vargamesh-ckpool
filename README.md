@@ -343,7 +343,7 @@ Bundled third-party components retain their respective licenses.
 
 Current public project status:
 
-**v0.1.0 / testing**
+**v0.1.1 / testing**
 
 This repository is intended to make the VargaMesh mining stack reproducible
 and auditable.
