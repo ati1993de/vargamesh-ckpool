@@ -1231,11 +1231,17 @@ def self_test():
         parent_script,
     )
 
-    parent_gbt = (
-        core.build_parent_template()
-    )
+    parent_gbt = core.build_parent_template()
 
-    state = core.latest
+    # Mining is now per-user: a synthetic parent template by itself
+    # has no VMESH child state. Create the user's child work explicitly.
+    miner_script = b"\x00\x14" + bytes.fromhex("11" * 20)
+    state = core._build_user_state(
+        fake.call("getblocktemplate", [{"rules": ["segwit"]}]),
+        miner_script,
+        "selftest-vmesh-miner",
+    )
+    parent_gbt["coinbaseaux"]["flags"] = state["commitment"].hex()
 
     assert state is not None
     assert len(
