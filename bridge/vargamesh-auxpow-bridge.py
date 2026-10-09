@@ -16,6 +16,34 @@ AUXPOW_NONCE = 0x564D
 AUXPOW_VERSION_BIT = 1 << 8
 MERGED_MINING_MAGIC = bytes.fromhex("fabe6d6d")
 
+# Official VMESH mainnet pool fee; not a blockchain consensus rule.
+VMESH_DEVELOPER_FEE_ADDRESS = "vm1qsfsgj70pdv86nguvexzvsflmcknz4lrsj87wx9"
+VMESH_DEVELOPER_PAYOUT_SCRIPT = bytes.fromhex(
+    "001482608979e16b0fa9a38cc984c827fbc5a62afc70"
+)
+VMESH_DEVELOPER_FEE_PERCENT = 1
+VMESH_INITIAL_SUBSIDY_SATS = 25 * 100_000_000
+VMESH_SUBSIDY_HALVING_INTERVAL = 1_051_200
+
+
+def vmesh_reward_split(gbt):
+    """(miner, developer) in VMESH sats. Fee only on block subsidy."""
+    height = int(gbt["height"])
+    total_reward = int(gbt["coinbasevalue"])
+    if height < 0 or total_reward < 0:
+        raise ValueError("invalid VMESH height or coinbasevalue")
+
+    halvings = height // VMESH_SUBSIDY_HALVING_INTERVAL
+    subsidy = VMESH_INITIAL_SUBSIDY_SATS >> halvings if halvings < 64 else 0
+    if total_reward < subsidy:
+        raise ValueError(
+            "VMESH coinbasevalue below expected mainnet subsidy; "
+            "verify Core network and height"
+        )
+    developer = subsidy * VMESH_DEVELOPER_FEE_PERCENT // 100
+    return total_reward - developer, developer
+
+
 
 def h256(data: bytes) -> bytes:
     return hashlib.sha256(
@@ -283,9 +311,7 @@ def build_child_coinbase(gbt, miner_script, developer_script):
         + b"\xff\xff\xff\xff"
     )
 
-    reward = int(gbt["coinbasevalue"])
-    developer_value = reward // 100
-    miner_value = reward - developer_value
+    miner_value, developer_value = vmesh_reward_split(gbt)
 
     outputs = [
         coinbase_output(miner_value, miner_script),
@@ -384,8 +410,13 @@ class BridgeCore:
         developer_payout_script,
         parent_script,
     ):
+        if developer_payout_script != VMESH_DEVELOPER_PAYOUT_SCRIPT:
+            raise ValueError(
+                "VMESH developer payout script must match fixed address "
+                + VMESH_DEVELOPER_FEE_ADDRESS
+            )
         self.node = node
-        self.developer_payout_script = developer_payout_script
+        self.developer_payout_script = VMESH_DEVELOPER_PAYOUT_SCRIPT
         self.parent_script = parent_script
 
         self.lock = threading.Lock()
@@ -488,9 +519,7 @@ class BridgeCore:
 
         target = int(gbt["target"], 16) if gbt.get("target") else bits_target(bits)
         parent_prev = synthetic_parent_prev(gbt["previousblockhash"])
-        reward = int(gbt["coinbasevalue"])
-        developer_value = reward // 100
-        miner_value = reward - developer_value
+        miner_value, developer_value = vmesh_reward_split(gbt)
 
         state = {
             "gbt": gbt,
@@ -1187,12 +1216,7 @@ def make_simple_coinbase(commitment):
 def self_test():
     fake = FakeNode()
 
-    child_script = (
-        b"\x00\x14"
-        + bytes.fromhex(
-            "11" * 20
-        )
-    )
+    child_script = VMESH_DEVELOPER_PAYOUT_SCRIPT
 
     parent_script = (
         b"\x00\x14"
@@ -1566,7 +1590,7 @@ def main():
 
     ap.add_argument(
         "--developer-payout-script",
-        default="",
+        default=VMESH_DEVELOPER_PAYOUT_SCRIPT.hex(),
     )
 
     ap.add_argument(
@@ -1583,8 +1607,18 @@ def main():
         self_test()
         return
 
-    if not args.developer_payout_script:
-        raise SystemExit("--developer-payout-script required")
+    try:
+        configured_dev_script = bytes.fromhex(args.developer_payout_script)
+    except ValueError as exc:
+        raise SystemExit("invalid --developer-payout-script hex") from exc
+    if configured_dev_script != VMESH_DEVELOPER_PAYOUT_SCRIPT:
+        raise SystemExit(
+            "VMESH developer payout cannot be overridden. Expected "
+            + VMESH_DEVELOPER_FEE_ADDRESS
+            + " (script "
+            + VMESH_DEVELOPER_PAYOUT_SCRIPT.hex()
+            + ")"
+        )
 
     vmesh_pass = args.vmesh_pass
 
@@ -1609,7 +1643,7 @@ def main():
 
     core = BridgeCore(
         node,
-        bytes.fromhex(args.developer_payout_script),
+        configured_dev_script,
         bytes.fromhex(args.parent_script),
     )
 

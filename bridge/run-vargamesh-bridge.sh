@@ -28,8 +28,8 @@ fail()
 [ -n "${VMESH_DEVELOPER_PAYOUT_SCRIPT:-}" ] ||
     fail "VMESH_DEVELOPER_PAYOUT_SCRIPT empty"
 
-[ "${VMESH_DEVELOPER_PAYOUT_SCRIPT}" != "CHANGE_ME" ] ||
-    fail "VMESH_DEVELOPER_PAYOUT_SCRIPT still CHANGE_ME"
+[ "${VMESH_DEVELOPER_PAYOUT_SCRIPT,,}" = "001482608979e16b0fa9a38cc984c827fbc5a62afc70" ] ||
+    fail "VMESH_DEVELOPER_PAYOUT_SCRIPT must match fixed 1% VMESH development address"
 
 [ -n "${VMESH_PARENT_SCRIPT:-}" ] ||
     fail "VMESH_PARENT_SCRIPT empty"
