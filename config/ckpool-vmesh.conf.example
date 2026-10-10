@@ -8,7 +8,7 @@
     }
   ],
   "btcaddress": "YOUR_VMESH_MINING_ADDRESS",
-  "btcsig": "/VMESH/",
+  "btcsig": "NEWCKPOOL For /VMESH/",
   "serverurl": [
     "0.0.0.0:3933"
   ],
